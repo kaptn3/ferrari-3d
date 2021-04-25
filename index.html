@@ -1,0 +1,77 @@
+<script type="module">
+    import * as THREE from './libs/three.module';
+    import { OrbitControls } from './libs/OrbitControls.js';
+    import { GLTFLoader } from './libs/GLTFLoader';
+    import { RoomEnvironment } from './libs/RoomEnvironment';
+
+    let container, renderer, scene, world, controls, camera
+    let elWidth, elHeight
+
+    function setupScene() {
+        scene = new THREE.Scene()
+        scene.background = new THREE.Color(0xffffff)
+        const pmremGenerator = new THREE.PMREMGenerator(renderer)
+        scene.environment = pmremGenerator.fromScene(new RoomEnvironment()).texture
+        scene.fog = new THREE.Fog(0xffffff, 10, 1000)
+    }
+
+    function setupWorld() {
+        world = new THREE.Group()
+        scene.add(world)
+    }
+
+    function setupCamera() {
+        camera = new THREE.PerspectiveCamera(40, elWidth / elHeight, 0.1, 100)
+        camera.position.set(-27.4, 17.4, -45)
+        scene.add(camera)
+    }
+
+    function setupControls() {
+        controls = new OrbitControls(camera, container)
+        controls.enabled = false
+        controls.update()
+    }
+
+    function rendererSetup() {
+        renderer = new THREE.WebGLRenderer({ antialias: true })
+        renderer.setPixelRatio(window.devicePixelRatio)
+        renderer.setSize(elWidth, elHeight)
+        renderer.shadowMap.enabled = true
+        container = document.body
+        container.appendChild(renderer.domElement)
+    }
+
+    function onSetup() {
+        elWidth = document.body.clientWidth
+        elHeight = document.body.clientHeight
+        rendererSetup()
+        setupScene()
+        setupCamera()
+        setupControls()
+        setupWorld()
+        addCar()
+    }
+
+    function addCar() {
+        const loader = new GLTFLoader()
+        loader.load(
+            './model/ferrari.gltf',
+            function (gltf) {
+                const carModel = gltf.scene
+                world.add(carModel)
+            }
+        )
+    }
+
+    function animate() {
+        requestAnimationFrame(animate)
+        render()
+    }
+
+    function render() {
+        renderer.render(scene, camera)
+    }
+
+    onSetup()
+    animate()
+</script>
